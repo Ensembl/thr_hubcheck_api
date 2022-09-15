@@ -30,6 +30,20 @@ Run
 uvicorn main:app --reload
 ```
 
+### Usage:
+
+Curl
+```
+curl -X 'GET' \
+  'http://127.0.0.1:8000/hubcheck?hub_url=<hub_url>' \
+  -H 'accept: application/json'
+```
+
+Request URL
+```
+http://127.0.0.1:8000/hubcheck?hub_url=<hub_url>
+```
+
 ### Useful Links:
 Hubs can be checked for valid file configuration, trackDb keywords, and composite or super track settings with [the Hub Development tool](https://genome.ucsc.edu/cgi-bin/hgHubConnect?#hubDeveloper).
 

@@ -12,7 +12,7 @@
    limitations under the License.
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from hub_check import hub_check
 
 description = """
@@ -26,13 +26,13 @@ Hubs can be checked for valid file configuration, trackDb keywords, and composit
 You can also use [hubCheck utility command-line](http://hgdownload.soe.ucsc.edu/admin/exe/).
 Take a look at [Debugging Track Hubs Documentation](https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Debug) for more details.
 
-GitHub URL: https://github.com/ucscGenomeBrowser/kent/tree/master/src/hg/utils/hubCheck
+GitHub URL: [https://github.com/ucscGenomeBrowser/kent/tree/master/src/hg/utils/hubCheck](https://github.com/ucscGenomeBrowser/kent/tree/master/src/hg/utils/hubCheck).
 """
 
 app = FastAPI(
     title="Hub Check Utility's API",
     description=description,
-    version="0.4.0",
+    version="0.6.0",
     # terms_of_service="http://example.com/terms/",
     contact={
         "name": "Ensembl Applications Team",
@@ -50,10 +50,13 @@ async def root():
     return {"message": "Welcome to hubCheck utility API"}
 
 
-# Path convertor fixes the issue of path components with forward slash
-# https://stackoverflow.com/a/62775706/4488332
-@app.get("/hubcheck/{url:path}", name="path-convertor")
-def hubcheck(hub_url: str):
+@app.get("/hubcheck")
+def hubcheck(
+    hub_url: str = Query(
+        title="Query string",
+        description="Hub URL to check, for example: `ftp://ftp.ebi.ac.uk/pub/databases/Rfam/12.0/genome_browser_hub/hub.txt`"
+    )
+):
     # TODO: add the possibility for the user to disable/enable hubCheck when submitting new Hub(s)
     # run the USCS hubCheck tool found in kent tools on the submitted hub
     hub_check_result = hub_check(hub_url)
