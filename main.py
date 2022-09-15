@@ -36,7 +36,7 @@ app = FastAPI(
     # terms_of_service="http://example.com/terms/",
     contact={
         "name": "Ensembl Applications Team",
-        "email": "apps@ebi.ac.uk",
+        "email": "ensembl-applications@ebi.ac.uk",
     },
     license_info={
         "name": "Apache 2.0",
@@ -53,7 +53,6 @@ async def root():
 @app.get("/hubcheck")
 def hubcheck(
     hub_url: str = Query(
-        title="Query string",
         description="Hub URL to check, for example: `ftp://ftp.ebi.ac.uk/pub/databases/Rfam/12.0/genome_browser_hub/hub.txt`"
     )
 ):

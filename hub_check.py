@@ -23,8 +23,6 @@ def hub_check(hub_url):
     :param hub_url: the hub url provided by the submitter
     :returns: the hub information if the submission was successful otherwise it returns an error
     """
-    # replacing 'file:///' by 'local:' to avoid 'Unrecognized protocol file in udcProtNew' error
-    hub_url = hub_url.replace('file:///', 'local:')
     # Download hubCheck if it doesn't exist and make it executable
     hubcheck = Path("hubCheck")
     if not Path(hubcheck).exists():
@@ -47,7 +45,6 @@ def hub_check(hub_url):
         stderr=subprocess.STDOUT,
         universal_newlines=True
     )
-    print(hub_check_result)
 
     # hubCheck exits with code 1 even if there are only warnings
     # to fix that, we ignore warning except if an error occurs.
