@@ -1,0 +1,18 @@
+# docker image based on alpine:3.6 for use in CI/CD pipelines. Includes openssh and rsync, 
+# and a couple of utility scripts for inserting SSH keys and setting search domain.
+image: ebiwd/alpine-ssh:3.6
+
+stages:
+  - test_ssh
+
+test_ssh:
+  before_script:
+    - add-ssh-key ${SSH_OWNER_USERNAME} "${SSH_OWNER_PRIVATE_KEY}" # ${SSH_W3_USERNAME} "${SSH_W3_PRIVATE_KEY}"
+  script:
+    - ssh $SSH_OWNER_USERNAME@$LOGIN_NODE
+
+
+# Resources:
+# https://embl-ebi-developers.slack.com/archives/CB441ME9X/p1662547944258899
+# https://docs.gitlab.com/ee/ci/ssh_keys/
+# https://medium.com/devops-community/how-to-configure-gitlab-ci-to-auto-deploy-your-app-via-ssh-84426bf7b749
