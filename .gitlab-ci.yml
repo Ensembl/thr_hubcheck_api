@@ -25,7 +25,7 @@ before_script:
   # with your own domain name. You can copy and repeat that command if you have
   # more than one server to connect to.
   # - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
-  - chmod 644 ~/.ssh/known_hosts
+  # - chmod 644 ~/.ssh/known_hosts
 
   # Alternatively, assuming you created the SSH_SERVER_HOSTKEYS variable
   # previously, uncomment the following two lines instead.
