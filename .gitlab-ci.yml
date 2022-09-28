@@ -21,11 +21,12 @@ before_script:
   # Create the SSH directory and give it the right permissions
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
+  - touch ~/.ssh/id_rsa ~/.ssh/known_hosts
   # Use ssh-keyscan to scan the keys of your private server. Replace gitlab.com
   # with your own domain name. You can copy and repeat that command if you have
   # more than one server to connect to.
-  # - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
-  # - chmod 644 ~/.ssh/known_hosts
+  - ssh-keyscan ${LOGIN_NODE} >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
 
   # Alternatively, assuming you created the SSH_SERVER_HOSTKEYS variable
   # previously, uncomment the following two lines instead.
