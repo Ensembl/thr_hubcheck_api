@@ -1,18 +1,51 @@
-# docker image based on alpine:3.6 for use in CI/CD pipelines. Includes openssh and rsync, 
-# and a couple of utility scripts for inserting SSH keys and setting search domain.
-image: ebiwd/alpine-ssh:3.6
+image: ubuntu
+
+variables:
+  # "~/worspace directory"
+  WORK_DIR: "workspace"
 
 stages:
-  - test_ssh
+  - deploy
 
-test_ssh:
-  before_script:
-    - add-ssh-key ${SSH_OWNER_USERNAME} "${SSH_OWNER_PRIVATE_KEY}" # ${SSH_W3_USERNAME} "${SSH_W3_PRIVATE_KEY}"
+before_script:
+  # Install ssh-agent if not already installed, it is required by Docker.
+  # (change apt-get to yum if you use an RPM-based image)
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+  # Run ssh-agent (inside the build environment)
+  - eval $(ssh-agent -s)
+  # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+  # We're using tr to fix line endings which makes ed25519 keys work
+  # without extra base64 encoding.
+  # https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  # Create the SSH directory and give it the right permissions
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  # Use ssh-keyscan to scan the keys of your private server. Replace gitlab.com
+  # with your own domain name. You can copy and repeat that command if you have
+  # more than one server to connect to.
+  # - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
+
+  # Alternatively, assuming you created the SSH_SERVER_HOSTKEYS variable
+  # previously, uncomment the following two lines instead.
+  #- echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts
+  #- chmod 644 ~/.ssh/known_hosts
+  # You can optionally disable host key checking. Be aware that by adding that
+  # you are suspectible to man-in-the-middle attacks.
+  # WARNING: Use this only with the Docker executor, if you use it with shell
+  # you will overwrite your user's SSH config.
+  #- '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+
+
+Test SSH:
+  stage: deploy
   script:
-    - ssh $SSH_OWNER_USERNAME@$LOGIN_NODE
+  - ssh -o StrictHostKeyChecking=no $SSH_OWNER_USERNAME@$LOGIN_NODE "cd ~/${WORK_DIR}; touch test.txt; ls -lh"
 
 
 # Resources:
 # https://embl-ebi-developers.slack.com/archives/CB441ME9X/p1662547944258899
 # https://docs.gitlab.com/ee/ci/ssh_keys/
 # https://medium.com/devops-community/how-to-configure-gitlab-ci-to-auto-deploy-your-app-via-ssh-84426bf7b749
+# https://gitlab.com/johandurancerdas/gitlab-cicd-tutorial/-/blob/master/.gitlab-ci.yml
