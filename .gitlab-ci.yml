@@ -1,8 +1,7 @@
 image: ubuntu
 
 variables:
-  # "~/worspace directory"
-  WORK_DIR: "workspace"
+  WORK_DIR: "~/workspace/thr_hubcheck_api"
 
 stages:
   - deploy
@@ -28,21 +27,22 @@ before_script:
   - ssh-keyscan ${LOGIN_NODE} >> ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
 
-  # Alternatively, assuming you created the SSH_SERVER_HOSTKEYS variable
-  # previously, uncomment the following two lines instead.
-  #- echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts
-  #- chmod 644 ~/.ssh/known_hosts
-  # You can optionally disable host key checking. Be aware that by adding that
-  # you are suspectible to man-in-the-middle attacks.
-  # WARNING: Use this only with the Docker executor, if you use it with shell
-  # you will overwrite your user's SSH config.
-  #- '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-
-
-Test SSH:
+deploy-prod:
   stage: deploy
-  script:
-  - ssh -o StrictHostKeyChecking=no $SSH_OWNER_USERNAME@$LOGIN_NODE "cd ~/${WORK_DIR}; touch test.txt; ls -lh"
+  script: >
+    ssh $SSH_OWNER_USERNAME@$LOGIN_NODE "
+      cd ${WORK_DIR}
+      git checkout main
+      git pull
+      ssh $PROD_VM
+        cd ${WORK_DIR}
+        source venv/bin/activate
+        pip install -r requirements.txt
+        echo 'Restarting the server...'
+        ps ax | grep gunicorn
+        pkill gunicorn
+        gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --daemon
+    "
 
 
 # Resources:
